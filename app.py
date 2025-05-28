@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime, UTC 
+from datetime import datetime, timezone 
 from sqlalchemy.exc import IntegrityError
 
 # Importações dos seus módulos locais

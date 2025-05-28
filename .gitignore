@@ -74,6 +74,8 @@ saude_contratos.db
 *.sqlite3
 *.db # Genérico para arquivos de banco
 
+pyproject.toml  
+poetry.lock
 # Arquivos específicos do VSCode (ou outro editor)
 .vscode/
 .idea/

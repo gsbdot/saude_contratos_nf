@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Criar Novo Contrato</h2>
+    <form method="POST" action="" novalidate> {{ form.hidden_tag() }}
+
+        <p>
+            {{ form.numero_contrato.label }}<br>
+            {{ form.numero_contrato(size=40) }}<br>
+            {% if form.numero_contrato.errors %}{% for error in form.numero_contrato.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.ata_id.label }}<br>
+            {{ form.ata_id() }}<br>
+            {% if form.ata_id.errors %}{% for error in form.ata_id.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.objeto.label }}<br>
+            {{ form.objeto(rows=4, cols=50) }}<br>
+            {% if form.objeto.errors %}{% for error in form.objeto.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.valor_total.label }}<br>
+            {{ form.valor_total(size=15) }}<br>
+            {% if form.valor_total.errors %}{% for error in form.valor_total.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.fornecedor.label }}<br>
+            {{ form.fornecedor(size=40) }}<br>
+            {% if form.fornecedor.errors %}{% for error in form.fornecedor.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.data_assinatura_contrato.label }}<br>
+            {{ form.data_assinatura_contrato() }}<br>
+            {% if form.data_assinatura_contrato.errors %}{% for error in form.data_assinatura_contrato.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.data_inicio_vigencia.label }}<br>
+            {{ form.data_inicio_vigencia() }}<br>
+            {% if form.data_inicio_vigencia.errors %}{% for error in form.data_inicio_vigencia.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.data_fim_vigencia.label }}<br>
+            {{ form.data_fim_vigencia() }}<br>
+            {% if form.data_fim_vigencia.errors %}{% for error in form.data_fim_vigencia.errors %}<small style="color:red;">{{ error }}</small><br>{% endfor %}{% endif %}
+        </p>
+        <p>
+            {{ form.submit() }}
+        </p>
+    </form>
+    <hr>
+    <a href="{{ url_for('listar_contratos') }}">Voltar para a Lista de Contratos</a>
+{% endblock %}

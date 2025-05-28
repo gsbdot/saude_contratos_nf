@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ titulo_pagina if titulo_pagina else ("Editar Item da Ata: " + (form.descricao_item.data if form.descricao_item.data else item_id)) }}</h2>
+    <h4 class="text-muted">Ata: {{ ata_numero if ata_numero else 'N/A' }}</h4>
+    <hr class="my-4">
+    <form method="POST" action="" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.descricao_item.label(class="form-label") }}
+            {{ form.descricao_item(class="form-control" + (" is-invalid" if form.descricao_item.errors else "")) }}
+            {% if form.descricao_item.errors %}<div class="invalid-feedback d-block">{% for error in form.descricao_item.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.tipo_item.label(class="form-label") }}
+            {{ form.tipo_item(class="form-select" + (" is-invalid" if form.tipo_item.errors else "")) }}
+            {% if form.tipo_item.errors %}<div class="invalid-feedback d-block">{% for error in form.tipo_item.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                {{ form.unidade_medida.label(class="form-label") }}
+                {{ form.unidade_medida(class="form-control" + (" is-invalid" if form.unidade_medida.errors else "")) }}
+                {% if form.unidade_medida.errors %}<div class="invalid-feedback d-block">{% for error in form.unidade_medida.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {{ form.quantidade_registrada.label(class="form-label") }} (Saldo Atual: {{ saldo_atual_item|default(0)|float }})
+                {{ form.quantidade_registrada(class="form-control" + (" is-invalid" if form.quantidade_registrada.errors else "")) }}
+                <small class="form-text text-muted">Alterar a quantidade aqui RECALCULARÁ o saldo disponível com base no consumo já existente. Cuidado!</small>
+                {% if form.quantidade_registrada.errors %}<div class="invalid-feedback d-block">{% for error in form.quantidade_registrada.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {{ form.valor_unitario_registrado.label(class="form-label") }}
+                {{ form.valor_unitario_registrado(class="form-control" + (" is-invalid" if form.valor_unitario_registrado.errors else "")) }}
+                {% if form.valor_unitario_registrado.errors %}<div class="invalid-feedback d-block">{% for error in form.valor_unitario_registrado.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+
+        <h5 class="mt-4">Detalhes Específicos (se aplicável)</h5>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.principio_ativo.label(class="form-label") }}
+                {{ form.principio_ativo(class="form-control" + (" is-invalid" if form.principio_ativo.errors else "")) }}
+                {% if form.principio_ativo.errors %}<div class="invalid-feedback d-block">{% for error in form.principio_ativo.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.lote.label(class="form-label") }}
+                {{ form.lote(class="form-control" + (" is-invalid" if form.lote.errors else "")) }}
+                {% if form.lote.errors %}<div class="invalid-feedback d-block">{% for error in form.lote.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            {{ form.data_garantia_fim.label(class="form-label") }}
+            {{ form.data_garantia_fim(class="form-control" + (" is-invalid" if form.data_garantia_fim.errors else "")) }}
+            {% if form.data_garantia_fim.errors %}<div class="invalid-feedback d-block">{% for error in form.data_garantia_fim.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+        </div>
+
+        <div class="row align-items-center">
+             <div class="col-md-auto">
+                <div class="form-check mb-3">
+                    {{ form.requer_calibracao(class="form-check-input" + (" is-invalid" if form.requer_calibracao.errors else "")) }}
+                    {{ form.requer_calibracao.label(class="form-check-label") }}
+                    {% if form.requer_calibracao.errors %}<div class="invalid-feedback d-block">{% for error in form.requer_calibracao.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+                </div>
+            </div>
+             <div class="col-md-auto">
+                <div class="form-check mb-3">
+                    {{ form.reutilizavel(class="form-check-input" + (" is-invalid" if form.reutilizavel.errors else "")) }}
+                    {{ form.reutilizavel.label(class="form-check-label") }}
+                    {% if form.reutilizavel.errors %}<div class="invalid-feedback d-block">{% for error in form.reutilizavel.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.ultima_calibracao.label(class="form-label") }}
+                {{ form.ultima_calibracao(class="form-control" + (" is-invalid" if form.ultima_calibracao.errors else "")) }}
+                {% if form.ultima_calibracao.errors %}<div class="invalid-feedback d-block">{% for error in form.ultima_calibracao.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.proxima_calibracao.label(class="form-label") }}
+                {{ form.proxima_calibracao(class="form-control" + (" is-invalid" if form.proxima_calibracao.errors else "")) }}
+                {% if form.proxima_calibracao.errors %}<div class="invalid-feedback d-block">{% for error in form.proxima_calibracao.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            {{ form.submit(value="Salvar Alterações no Item", class="btn btn-primary") }}
+            <a href="{{ url_for('listar_itens_da_ata', ata_id=ata_id_ref) }}" class="btn btn-secondary ms-2">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

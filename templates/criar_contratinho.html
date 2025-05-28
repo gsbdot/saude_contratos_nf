@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ titulo_pagina if titulo_pagina else "Registrar Novo Contratinho" }}</h2>
+    <hr class="my-4">
+    <form method="POST" action="" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.numero_contratinho.label(class="form-label") }}
+                {{ form.numero_contratinho(class="form-control" + (" is-invalid" if form.numero_contratinho.errors else "")) }}
+                {% if form.numero_contratinho.errors %}<div class="invalid-feedback d-block">{% for error in form.numero_contratinho.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.ata_id.label(class="form-label") }}
+                {{ form.ata_id(class="form-select" + (" is-invalid" if form.ata_id.errors else "")) }}
+                {% if form.ata_id.errors %}<div class="invalid-feedback d-block">{% for error in form.ata_id.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.objeto.label(class="form-label") }}
+            {{ form.objeto(class="form-control" + (" is-invalid" if form.objeto.errors else ""), rows="3") }}
+            {% if form.objeto.errors %}<div class="invalid-feedback d-block">{% for error in form.objeto.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.valor.label(class="form-label") }}
+                {{ form.valor(class="form-control" + (" is-invalid" if form.valor.errors else "")) }}
+                {% if form.valor.errors %}<div class="invalid-feedback d-block">{% for error in form.valor.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.favorecido.label(class="form-label") }}
+                {{ form.favorecido(class="form-control" + (" is-invalid" if form.favorecido.errors else "")) }}
+                {% if form.favorecido.errors %}<div class="invalid-feedback d-block">{% for error in form.favorecido.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.data_emissao.label(class="form-label") }}
+                {{ form.data_emissao(class="form-control" + (" is-invalid" if form.data_emissao.errors else "")) }}
+                {% if form.data_emissao.errors %}<div class="invalid-feedback d-block">{% for error in form.data_emissao.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.unidade_saude_id.label(class="form-label") }}
+                {{ form.unidade_saude_id(class="form-select" + (" is-invalid" if form.unidade_saude_id.errors else "")) }}
+                {% if form.unidade_saude_id.errors %}<div class="invalid-feedback d-block">{% for error in form.unidade_saude_id.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+
+        <hr class="my-3">
+        <h5>Consumo de Item (Opcional)</h5>
+        <p class="text-muted"><small>Se este contratinho consumir um item específico de uma ata, selecione a Ata Vinculada acima primeiro para carregar os itens correspondentes.</small></p>
+
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                {{ form.item_ata_id.label(class="form-label") }}
+                {{ form.item_ata_id(class="form-select" + (" is-invalid" if form.item_ata_id.errors else "")) }}
+                {% if form.item_ata_id.errors %}<div class="invalid-feedback d-block">{% for error in form.item_ata_id.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {{ form.quantidade_consumida.label(class="form-label") }}
+                {{ form.quantidade_consumida(class="form-control" + (" is-invalid" if form.quantidade_consumida.errors else "")) }}
+                {% if form.quantidade_consumida.errors %}<div class="invalid-feedback d-block">{% for error in form.quantidade_consumida.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('listar_contratinhos') }}" class="btn btn-secondary ms-2">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

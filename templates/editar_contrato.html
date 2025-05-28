@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ titulo_pagina if titulo_pagina else "Editar Contrato" }}: {{ form.numero_contrato.data if form.numero_contrato.data else contrato_id }}</h2>
+    <hr class="my-4">
+    <form method="POST" action="" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.numero_contrato.label(class="form-label") }}
+                {{ form.numero_contrato(class="form-control" + (" is-invalid" if form.numero_contrato.errors else "")) }}
+                {% if form.numero_contrato.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.numero_contrato.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.ata_id.label(class="form-label") }}
+                {{ form.ata_id(class="form-select" + (" is-invalid" if form.ata_id.errors else "")) }}
+                {% if form.ata_id.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.ata_id.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.objeto.label(class="form-label") }}
+            {{ form.objeto(class="form-control" + (" is-invalid" if form.objeto.errors else ""), rows="3") }}
+            {% if form.objeto.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.objeto.errors %}<span>{{ error }}</span><br>{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.valor_total.label(class="form-label") }}
+                {{ form.valor_total(class="form-control" + (" is-invalid" if form.valor_total.errors else "")) }}
+                {% if form.valor_total.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.valor_total.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.fornecedor.label(class="form-label") }}
+                {{ form.fornecedor(class="form-control" + (" is-invalid" if form.fornecedor.errors else "")) }}
+                {% if form.fornecedor.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.fornecedor.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                {{ form.data_assinatura_contrato.label(class="form-label") }}
+                {{ form.data_assinatura_contrato(class="form-control" + (" is-invalid" if form.data_assinatura_contrato.errors else "")) }}
+                {% if form.data_assinatura_contrato.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.data_assinatura_contrato.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {{ form.data_inicio_vigencia.label(class="form-label") }}
+                {{ form.data_inicio_vigencia(class="form-control" + (" is-invalid" if form.data_inicio_vigencia.errors else "")) }}
+                {% if form.data_inicio_vigencia.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.data_inicio_vigencia.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {{ form.data_fim_vigencia.label(class="form-label") }}
+                {{ form.data_fim_vigencia(class="form-control" + (" is-invalid" if form.data_fim_vigencia.errors else "")) }}
+                {% if form.data_fim_vigencia.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.data_fim_vigencia.errors %}<span>{{ error }}</span><br>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            {{ form.submit(value="Salvar Alterações", class="btn btn-primary") }}
+            <a href="{{ url_for('listar_contratos') }}" class="btn btn-secondary ms-2">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

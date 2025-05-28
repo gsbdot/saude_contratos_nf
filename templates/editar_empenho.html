@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ titulo_pagina if titulo_pagina else "Editar Empenho" }}: {{ form.numero_empenho.data if form.numero_empenho.data else empenho_id }}</h2>
+    <hr class="my-4">
+    <form method="POST" action="" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.numero_empenho.label(class="form-label") }}
+                {{ form.numero_empenho(class="form-control" + (" is-invalid" if form.numero_empenho.errors else "")) }}
+                {% if form.numero_empenho.errors %}<div class="invalid-feedback d-block">{% for error in form.numero_empenho.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.ata_id.label(class="form-label") }}
+                {{ form.ata_id(class="form-select" + (" is-invalid" if form.ata_id.errors else "")) }}
+                {% if form.ata_id.errors %}<div class="invalid-feedback d-block">{% for error in form.ata_id.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.descricao_simples.label(class="form-label") }}
+            {{ form.descricao_simples(class="form-control" + (" is-invalid" if form.descricao_simples.errors else ""), rows="3") }}
+            {% if form.descricao_simples.errors %}<div class="invalid-feedback d-block">{% for error in form.descricao_simples.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.valor_empenhado.label(class="form-label") }}
+                {{ form.valor_empenhado(class="form-control" + (" is-invalid" if form.valor_empenhado.errors else "")) }}
+                {% if form.valor_empenhado.errors %}<div class="invalid-feedback d-block">{% for error in form.valor_empenhado.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.favorecido.label(class="form-label") }}
+                {{ form.favorecido(class="form-control" + (" is-invalid" if form.favorecido.errors else "")) }}
+                {% if form.favorecido.errors %}<div class="invalid-feedback d-block">{% for error in form.favorecido.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.data_emissao.label(class="form-label") }}
+                {{ form.data_emissao(class="form-control" + (" is-invalid" if form.data_emissao.errors else "")) }}
+                {% if form.data_emissao.errors %}<div class="invalid-feedback d-block">{% for error in form.data_emissao.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.unidade_saude_id.label(class="form-label") }}
+                {{ form.unidade_saude_id(class="form-select" + (" is-invalid" if form.unidade_saude_id.errors else "")) }}
+                {% if form.unidade_saude_id.errors %}<div class="invalid-feedback d-block">{% for error in form.unidade_saude_id.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+
+        <hr class="my-3">
+        <h5>Consumo de Item (Opcional)</h5>
+        <p class="text-muted"><small>A lista de itens é populada com base na Ata Vinculada selecionada acima. Se alterar a Ata, a lista de itens pode precisar que a página seja recarregada ou a alteração salva primeiro para refletir corretamente.</small></p>
+
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                {{ form.item_ata_id.label(class="form-label") }}
+                {{ form.item_ata_id(class="form-select" + (" is-invalid" if form.item_ata_id.errors else "")) }}
+                {% if form.item_ata_id.errors %}<div class="invalid-feedback d-block">{% for error in form.item_ata_id.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {{ form.quantidade_consumida.label(class="form-label") }}
+                {{ form.quantidade_consumida(class="form-control" + (" is-invalid" if form.quantidade_consumida.errors else "")) }}
+                {% if form.quantidade_consumida.errors %}<div class="invalid-feedback d-block">{% for error in form.quantidade_consumida.errors %}<span>{{ error }}</span><br>{% endfor %}</div>{% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            {{ form.submit(value="Salvar Alterações", class="btn btn-primary") }}
+            <a href="{{ url_for('listar_empenhos') }}" class="btn btn-secondary ms-2">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>Dashboard</h2>
+            <p>Visão geral do sistema de gestão de contratos e atas.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="card-counter bg-light">
+                <i class="fas fa-file-signature fa-3x text-primary"></i> <span class="count-numbers">{{ totais.atas }}</span>
+                <span class="count-name">Atas Registradas</span>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card-counter bg-light">
+                <i class="fas fa-file-contract fa-3x text-success"></i>
+                <span class="count-numbers">{{ totais.contratos }}</span>
+                <span class="count-name">Contratos</span>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card-counter bg-light">
+                <i class="fas fa-file-alt fa-3x text-info"></i>
+                <span class="count-numbers">{{ totais.contratinhos }}</span>
+                <span class="count-name">Contratinhos</span>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card-counter bg-light">
+                <i class="fas fa-receipt fa-3x text-warning"></i>
+                <span class="count-numbers">{{ totais.empenhos }}</span>
+                <span class="count-name">Empenhos</span>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <h4>Alertas de Saldo Baixo de Itens</h4>
+    {% if itens_saldo_baixo %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ata</th>
+                        <th>Item</th>
+                        <th>Unidade</th>
+                        <th>Qtd. Registrada</th>
+                        <th class="text-danger">Saldo Disponível</th>
+                        <th>Princípio Ativo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens_saldo_baixo %}
+                    <tr class="table-warning">
+                        <td><a href="{{ url_for('listar_itens_da_ata', ata_id=item.ata_mae.id) }}">{{ item.ata_mae.numero_ata }}</a></td>
+                        <td>{{ item.descricao_item }}</td>
+                        <td>{{ item.unidade_medida if item.unidade_medida else '-'}}</td>
+                        <td>{{ item.quantidade_registrada|float }}</td>
+                        <td class="text-danger fw-bold">{{ item.saldo_disponivel|float }}</td>
+                        <td>{{ item.principio_ativo if item.principio_ativo else '-'}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-success" role="alert">
+            Nenhum item com saldo baixo no momento (abaixo de {{ limite_saldo_baixo }} unidades).
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

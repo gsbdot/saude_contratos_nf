@@ -1,10 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timezone
+from datetime import datetime, timezone # Importação correta
 
 db = SQLAlchemy()
 
 def get_current_time_utc():
-    return datetime.now(UTC)
+    """ Retorna o tempo atual em UTC de forma compatível com Python 3.10+ """
+    return datetime.now(timezone.utc) # Uso correto de timezone.utc
 
 class Ata(db.Model):
     __tablename__ = 'ata'
@@ -43,7 +44,7 @@ class ItemAta(db.Model):
         ('SERVICO', 'Serviço'), 
         ('OUTRO', 'Outro')
     ]
-    tipo_item = db.Column(db.String(50), nullable=False, default='OUTRO')
+    tipo_item = db.Column(db.String(50), nullable=False, default='OUTRO') # Confirmado nullable=False
     
     data_garantia_fim = db.Column(db.DateTime, nullable=True)
     requer_calibracao = db.Column(db.Boolean, default=False, nullable=True)
@@ -54,6 +55,7 @@ class ItemAta(db.Model):
     ata_id = db.Column(db.Integer, db.ForeignKey('ata.id'), nullable=False)
     criado_em = db.Column(db.DateTime, default=get_current_time_utc)
 
+    # Ajuste nos foreign_keys para evitar ambiguidade se ItemAta tivesse múltiplos campos para Contratinho/Empenho
     consumos_contratinho = db.relationship('Contratinho', backref='item_consumido', lazy='dynamic', foreign_keys='Contratinho.item_ata_id')
     consumos_empenho = db.relationship('Empenho', backref='item_consumido', lazy='dynamic', foreign_keys='Empenho.item_ata_id')
 
@@ -98,6 +100,7 @@ class UnidadeSaude(db.Model):
     email_responsavel = db.Column(db.String(120), nullable=True)
     criado_em = db.Column(db.DateTime, default=get_current_time_utc)
 
+    # Relacionamentos para fácil acesso (backref cria 'unidade_saude_solicitante' em Contratinho/Empenho)
     contratinhos_vinculados = db.relationship('Contratinho', backref='unidade_saude_solicitante', lazy='dynamic', foreign_keys='Contratinho.unidade_saude_id')
     empenhos_vinculados = db.relationship('Empenho', backref='unidade_saude_solicitante', lazy='dynamic', foreign_keys='Empenho.unidade_saude_id')
 

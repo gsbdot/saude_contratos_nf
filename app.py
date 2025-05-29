@@ -5,6 +5,7 @@ from datetime import datetime, timezone # Importação correta
 from sqlalchemy.exc import IntegrityError
 
 # Importações dos seus módulos locais
+import os
 from models import db, Ata, Contrato, Contratinho, Empenho, ItemAta, UnidadeSaude
 from forms import AtaForm, ContratoForm, ContratinhoForm, EmpenhoForm, ItemAtaForm, UnidadeSaudeForm
 import reports 
@@ -389,4 +390,238 @@ def criar_contratinho():
 @app.route('/contratinho/editar/<int:contratinho_id>', methods=['GET', 'POST'])
 def editar_contratinho(contratinho_id):
     ct_para_editar = Contratinho.query.get_or_404(contratinho_id)
-    ata_atual_do_ct = Ata.query.get(ct_para
+    ata_atual_do_ct = Ata.query.get(ct_para_editar.ata_id) 
+    form = ContratinhoForm(obj=ct_para_editar, ata_obj_para_filtro_de_itens=ata_atual_do_ct)
+
+    item_original_id = ct_para_editar.item_ata_id
+    qtd_original_consumida = ct_para_editar.quantidade_consumida if ct_para_editar.quantidade_consumida else 0
+
+    if form.validate_on_submit():
+        novo_item_id = form.item_ata_id.data 
+        nova_qtd_a_consumir = form.quantidade_consumida.data if form.quantidade_consumida.data else 0
+        item_selecionado_para_consumo = None 
+
+        if novo_item_id and nova_qtd_a_consumir > 0:
+            item_selecionado_para_consumo = ItemAta.query.get(novo_item_id)
+            if not item_selecionado_para_consumo:
+                flash('Item da ata selecionado para consumo não encontrado.', 'danger')
+                return render_template('editar_contratinho.html', titulo_pagina="Editar Contratinho", form=form, contratinho_id=contratinho_id)
+            if item_selecionado_para_consumo.ata_id != form.ata_id.data: 
+                flash('O item selecionado não pertence à ata selecionada para o contratinho.', 'danger')
+                return render_template('editar_contratinho.html', titulo_pagina="Editar Contratinho", form=form, contratinho_id=contratinho_id)
+
+            saldo_disponivel_real_novo_item = item_selecionado_para_consumo.saldo_disponivel
+            if item_original_id == novo_item_id: 
+                if (saldo_disponivel_real_novo_item + qtd_original_consumida) < nova_qtd_a_consumir:
+                    flash(f'Saldo insuficiente para o item "{item_selecionado_para_consumo.descricao_item}". Saldo ajustado disponível: {saldo_disponivel_real_novo_item + qtd_original_consumida}', 'danger')
+                    return render_template('editar_contratinho.html', titulo_pagina="Editar Contratinho", form=form, contratinho_id=contratinho_id)
+            else: 
+                if saldo_disponivel_real_novo_item < nova_qtd_a_consumir:
+                    flash(f'Saldo insuficiente para o NOVO item "{item_selecionado_para_consumo.descricao_item}". Saldo disponível: {saldo_disponivel_real_novo_item}', 'danger')
+                    return render_template('editar_contratinho.html', titulo_pagina="Editar Contratinho", form=form, contratinho_id=contratinho_id)
+        
+        elif novo_item_id and nova_qtd_a_consumir <= 0: 
+            flash('Se um item for selecionado, a quantidade consumida deve ser maior que zero.', 'danger')
+            return render_template('editar_contratinho.html', titulo_pagina="Editar Contratinho", form=form, contratinho_id=contratinho_id)
+        
+        if not novo_item_id:
+            nova_qtd_a_consumir = 0
+            if form.quantidade_consumida.data and form.quantidade_consumida.data > 0:
+                 flash('Nenhum item selecionado, a quantidade consumida será zerada.', 'warning')
+        
+        try:
+            if item_original_id:
+                item_original_obj = ItemAta.query.get(item_original_id)
+                if item_original_obj:
+                    item_original_obj.saldo_disponivel += qtd_original_consumida
+            
+            if item_selecionado_para_consumo and nova_qtd_a_consumir > 0: 
+                item_selecionado_para_consumo.saldo_disponivel -= nova_qtd_a_consumir
+ 
+            form.populate_obj(ct_para_editar) 
+            ct_para_editar.item_ata_id = novo_item_id 
+            ct_para_editar.quantidade_consumida = nova_qtd_a_consumir
+            
+            db.session.commit()
+            flash('Contratinho atualizado com sucesso!', 'success')
+            return redirect(url_for('listar_contratinhos'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar contratinho: {str(e)}', 'danger')
+
+    return render_template('editar_contratinho.html', titulo_pagina="Editar Contratinho", form=form, contratinho_id=contratinho_id)
+
+@app.route('/contratinho/excluir/<int:contratinho_id>', methods=['GET'])
+def excluir_contratinho(contratinho_id):
+    ct_para_excluir = Contratinho.query.get_or_404(contratinho_id)
+    item_id_consumido = ct_para_excluir.item_ata_id
+    qtd_consumida = ct_para_excluir.quantidade_consumida if ct_para_excluir.quantidade_consumida else 0
+
+    try:
+        if item_id_consumido and qtd_consumida > 0:
+            item_afetado = ItemAta.query.get(item_id_consumido)
+            if item_afetado:
+                item_afetado.saldo_disponivel += qtd_consumida
+        
+        db.session.delete(ct_para_excluir)
+        db.session.commit()
+        flash('Contratinho excluído com sucesso! Saldo do item (se houver) foi restaurado.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir contratinho: {str(e)}', 'danger')
+    return redirect(url_for('listar_contratinhos'))
+
+# --- ROTAS PARA EMPENHOS ---
+@app.route('/empenhos')
+def listar_empenhos():
+    todos_os_empenhos = Empenho.query.order_by(Empenho.data_emissao.desc()).all()
+    return render_template('listar_empenhos.html',
+                           titulo_pagina="Lista de Empenhos",
+                           lista_de_empenhos=todos_os_empenhos)
+
+@app.route('/empenho/novo', methods=['GET', 'POST'])
+def criar_empenho():
+    form = EmpenhoForm()
+    if form.validate_on_submit():
+        item_id = form.item_ata_id.data
+        quantidade_a_consumir = form.quantidade_consumida.data if form.quantidade_consumida.data else 0
+        item_afetado = None
+
+        if item_id and quantidade_a_consumir > 0:
+            item_afetado = ItemAta.query.get(item_id)
+            if not item_afetado:
+                flash('Item da ata selecionado para consumo não encontrado.', 'danger')
+                return render_template('criar_empenho.html', titulo_pagina="Registrar Empenho", form=form)
+            if item_afetado.ata_id != form.ata_id.data:
+                flash('O item selecionado não pertence à ata selecionada para o empenho.', 'danger')
+                return render_template('criar_empenho.html', titulo_pagina="Registrar Empenho", form=form)
+            if item_afetado.saldo_disponivel < quantidade_a_consumir:
+                flash(f'Saldo insuficiente para o item "{item_afetado.descricao_item}". Saldo disponível: {item_afetado.saldo_disponivel}', 'danger')
+                return render_template('criar_empenho.html', titulo_pagina="Registrar Empenho", form=form)
+        elif item_id and quantidade_a_consumir <= 0:
+            flash('Se um item for selecionado, a quantidade consumida deve ser maior que zero.', 'danger')
+            return render_template('criar_empenho.html', titulo_pagina="Registrar Empenho", form=form)
+        elif not item_id and quantidade_a_consumir > 0:
+            form.item_ata_id.data = None 
+            form.quantidade_consumida.data = 0
+            flash('Se uma quantidade for consumida, um item da ata deve ser selecionado. Nenhum item será consumido.', 'warning')
+
+        try:
+            novo_empenho = Empenho()
+            form.populate_obj(novo_empenho)
+            if not novo_empenho.item_ata_id:
+                novo_empenho.quantidade_consumida = 0
+            
+            db.session.add(novo_empenho)
+            
+            if item_afetado and novo_empenho.item_ata_id and quantidade_a_consumir > 0:
+                item_afetado.saldo_disponivel -= quantidade_a_consumir
+
+            db.session.commit()
+            flash('Empenho registrado com sucesso!', 'success')
+            if item_afetado and novo_empenho.item_ata_id and quantidade_a_consumir > 0:
+                 flash(f'Saldo do item "{item_afetado.descricao_item}" atualizado.', 'info')
+            return redirect(url_for('listar_empenhos'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao registrar empenho: {str(e)}', 'danger')
+    return render_template('criar_empenho.html', titulo_pagina="Registrar Empenho", form=form)
+
+@app.route('/empenho/editar/<int:empenho_id>', methods=['GET', 'POST'])
+def editar_empenho(empenho_id):
+    emp_para_editar = Empenho.query.get_or_404(empenho_id)
+    ata_atual_do_emp = Ata.query.get(emp_para_editar.ata_id)
+    form = EmpenhoForm(obj=emp_para_editar, ata_obj_para_filtro_de_itens=ata_atual_do_emp)
+
+    item_original_id = emp_para_editar.item_ata_id
+    qtd_original_consumida = emp_para_editar.quantidade_consumida if emp_para_editar.quantidade_consumida else 0
+
+    if form.validate_on_submit():
+        novo_item_id = form.item_ata_id.data
+        nova_qtd_a_consumir = form.quantidade_consumida.data if form.quantidade_consumida.data else 0
+        item_selecionado_para_consumo = None
+
+        if novo_item_id and nova_qtd_a_consumir > 0:
+            item_selecionado_para_consumo = ItemAta.query.get(novo_item_id)
+            if not item_selecionado_para_consumo:
+                flash('Item da ata selecionado para consumo não encontrado.', 'danger')
+                return render_template('editar_empenho.html', titulo_pagina="Editar Empenho", form=form, empenho_id=empenho_id)
+            if item_selecionado_para_consumo.ata_id != form.ata_id.data:
+                flash('O item selecionado não pertence à ata selecionada para o empenho.', 'danger')
+                return render_template('editar_empenho.html', titulo_pagina="Editar Empenho", form=form, empenho_id=empenho_id)
+
+            saldo_disponivel_real_novo_item = item_selecionado_para_consumo.saldo_disponivel
+            if item_original_id == novo_item_id:
+                if (saldo_disponivel_real_novo_item + qtd_original_consumida) < nova_qtd_a_consumir:
+                    flash(f'Saldo insuficiente para o item "{item_selecionado_para_consumo.descricao_item}".', 'danger')
+                    return render_template('editar_empenho.html', titulo_pagina="Editar Empenho", form=form, empenho_id=empenho_id)
+            else: 
+                if saldo_disponivel_real_novo_item < nova_qtd_a_consumir:
+                    flash(f'Saldo insuficiente para o NOVO item "{item_selecionado_para_consumo.descricao_item}".', 'danger')
+                    return render_template('editar_empenho.html', titulo_pagina="Editar Empenho", form=form, empenho_id=empenho_id)
+        elif novo_item_id and nova_qtd_a_consumir <= 0:
+            flash('Se um item for selecionado, a quantidade consumida deve ser maior que zero.', 'danger')
+            return render_template('editar_empenho.html', titulo_pagina="Editar Empenho", form=form, empenho_id=empenho_id)
+        if not novo_item_id: 
+            nova_qtd_a_consumir = 0
+            if form.quantidade_consumida.data and form.quantidade_consumida.data > 0:
+                 flash('Nenhum item selecionado, a quantidade consumida será zerada.', 'warning')
+            
+        try:
+            if item_original_id:
+                item_original_obj = ItemAta.query.get(item_original_id)
+                if item_original_obj:
+                    item_original_obj.saldo_disponivel += qtd_original_consumida
+            
+            if item_selecionado_para_consumo and nova_qtd_a_consumir > 0:
+                item_selecionado_para_consumo.saldo_disponivel -= nova_qtd_a_consumir
+            
+            form.populate_obj(emp_para_editar)
+            emp_para_editar.item_ata_id = novo_item_id 
+            emp_para_editar.quantidade_consumida = nova_qtd_a_consumir
+            
+            db.session.commit()
+            flash('Empenho atualizado com sucesso!', 'success')
+            return redirect(url_for('listar_empenhos'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar empenho: {str(e)}', 'danger')
+
+    return render_template('editar_empenho.html', titulo_pagina="Editar Empenho", form=form, empenho_id=empenho_id)
+
+@app.route('/empenho/excluir/<int:empenho_id>', methods=['GET'])
+def excluir_empenho(empenho_id):
+    emp_para_excluir = Empenho.query.get_or_404(empenho_id)
+    item_id_consumido = emp_para_excluir.item_ata_id
+    qtd_consumida = emp_para_excluir.quantidade_consumida if emp_para_excluir.quantidade_consumida else 0
+    try:
+        if item_id_consumido and qtd_consumida > 0:
+            item_afetado = ItemAta.query.get(item_id_consumido)
+            if item_afetado:
+                item_afetado.saldo_disponivel += qtd_consumida
+        
+        db.session.delete(emp_para_excluir)
+        db.session.commit()
+        flash('Empenho excluído com sucesso! Saldo do item (se houver) foi restaurado.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir empenho: {str(e)}', 'danger')
+    return redirect(url_for('listar_empenhos'))
+
+# --- ROTAS PARA RELATÓRIOS PDF ---
+@app.route('/relatorio/atas/todas')
+def relatorio_lista_atas_pdf():
+    todas_as_atas = Ata.query.order_by(Ata.ano.desc(), Ata.numero_ata.desc()).all()
+    if not todas_as_atas:
+        flash('Nenhuma ata encontrada para gerar o relatório.', 'warning')
+        return redirect(url_for('index'))
+    return reports.gerar_pdf_lista_atas(todas_as_atas)
+
+@app.route('/relatorio/ata/<int:ata_id>/detalhes')
+def relatorio_detalhes_ata_pdf(ata_id):
+    ata = Ata.query.get_or_404(ata_id)
+    itens_da_ata = ItemAta.query.filter_by(ata_id=ata.id).order_by(ItemAta.descricao_item).all()
+    return reports.gerar_pdf_detalhes_ata(ata, itens_da_ata)
+
+if __name__ == '__main__':
+    app.run(debug=True)
